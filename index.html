@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emploi du Temps Universitaire</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .schedule-table thead tr {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .schedule-table th {
+            padding: 15px;
+            font-weight: 600;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 2px solid #4a5568;
+        }
+
+        .schedule-table td {
+            padding: 15px;
+            border: 2px solid #cbd5e0;
+            vertical-align: top;
+        }
+
+        .day-cell {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .time-slot {
+            background: #edf2f7;
+            font-weight: bold;
+            text-align: center;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .session {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .session:last-child {
+            margin-bottom: 0;
+        }
+
+        .session:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .session-title {
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 6px;
+            color: #1a202c;
+        }
+
+        .session-details {
+            font-size: 13px;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .session-room {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-top: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Color coding for course types */
+        .cours {
+            background: linear-gradient(135deg, #ffd93d 0%, #ffb800 100%);
+            border-left: 5px solid #ff9800;
+        }
+
+        .tp {
+            background: linear-gradient(135deg, #ff6ec7 0%, #ff3d9a 100%);
+            border-left: 5px solid #e91e63;
+        }
+
+        .td {
+            background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+            border-left: 5px solid #0277bd;
+        }
+
+        .empty-cell {
+            background: #f7fafc;
+            text-align: center;
+            color: #a0aec0;
+            font-style: italic;
+        }
+
+        .multi-session {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Responsive design */
+        @media screen and (max-width: 1200px) {
+            .schedule-table {
+                font-size: 12px;
+            }
+
+            .session-title {
+                font-size: 13px;
+            }
+
+            .session-details {
+                font-size: 11px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+                margin-bottom: 20px;
+            }
+
+            .schedule-table {
+                font-size: 10px;
+            }
+
+            .schedule-table th,
+            .schedule-table td {
+                padding: 8px;
+            }
+
+            .session {
+                padding: 8px;
+            }
+
+            .session-title {
+                font-size: 11px;
+            }
+
+            .session-details {
+                font-size: 9px;
+            }
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 40px;
+            height: 25px;
+            border-radius: 5px;
+            border: 2px solid #4a5568;
+        }
+
+        .legend-color.cours {
+            background: linear-gradient(135deg, #ffd93d 0%, #ffb800 100%);
+        }
+
+        .legend-color.tp {
+            background: linear-gradient(135deg, #ff6ec7 0%, #ff3d9a 100%);
+        }
+
+        .legend-color.td {
+            background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        }
+
+        .legend-label {
+            font-weight: 600;
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Emploi du Temps Universitaire</h1>
+        
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th style="width: 12%;">Jour</th>
+                    <th style="width: 44%;">Matin (8h30 - 12h30)</th>
+                    <th style="width: 44%;">Après-midi (14h30 - 18h30)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Lundi -->
+                <tr>
+                    <td class="day-cell">Lundi</td>
+                    <td>
+                        <div class="session cours">
+                            <div class="session-title">Initiation aux Bases de données</div>
+                            <div class="session-details">
+                                Pr Nachaoui Mourad<br>
+                                <span class="session-room">Amphi 5</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="multi-session">
+                            <div class="session tp">
+                                <div class="session-title">TP Initiation aux Bases de données - G1</div>
+                                <div class="session-details">
+                                    Pr Nachaoui Mourad<br>
+                                    <span class="session-room">Salle A02</span>
+                                </div>
+                            </div>
+                            <div class="session tp">
+                                <div class="session-title">TP Initiation aux Bases de données - G2</div>
+                                <div class="session-details">
+                                    Houssi Amine<br>
+                                    <span class="session-room">Salle A03</span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Mardi -->
+                <tr>
+                    <td class="day-cell">Mardi</td>
+                    <td>
+                        <div class="session cours">
+                            <div class="session-title">Développement Web Dynamique</div>
+                            <div class="session-details">
+                                Pr ZOUGAGIH Hicham<br>
+                                <span class="session-room">Amphi 5</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="session cours">
+                            <div class="session-title">JAVA</div>
+                            <div class="session-details">
+                                Pr Rachid Elayachi<br>
+                                <span class="session-room">Amphi 5</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Mercredi -->
+                <tr>
+                    <td class="day-cell">Mercredi</td>
+                    <td>
+                        <div class="multi-session">
+                            <div class="session tp">
+                                <div class="session-title">TP Programmation WEB Dynamique - G1</div>
+                                <div class="session-details">
+                                    <span class="session-room">Salle A02</span>
+                                </div>
+                            </div>
+                            <div class="session tp">
+                                <div class="session-title">TP Programmation WEB Dynamique - G2</div>
+                                <div class="session-details">
+                                    <span class="session-room">Salle A03</span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="session tp">
+                            <div class="session-title">TP JAVA - G1</div>
+                            <div class="session-details">
+                                Khoudi Zakariae<br>
+                                <span class="session-room">Salle A03</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Jeudi -->
+                <tr>
+                    <td class="day-cell">Jeudi</td>
+                    <td class="empty-cell">-</td>
+                    <td>
+                        <div class="session tp">
+                            <div class="session-title">TP JAVA - G2</div>
+                            <div class="session-details">
+                                Khoudi Zakariae<br>
+                                <span class="session-room">Salle A02</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Vendredi -->
+                <tr>
+                    <td class="day-cell">Vendredi</td>
+                    <td>
+                        <div class="multi-session">
+                            <div class="session td">
+                                <div class="session-title">TD Programmation WEB Dynamique</div>
+                                <div class="session-details">
+                                    <span class="session-room">Salle B7</span>
+                                </div>
+                            </div>
+                            <div class="session td">
+                                <div class="session-title">TD JAVA</div>
+                                <div class="session-details">
+                                    <span class="session-room">Salle B7</span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="session td">
+                            <div class="session-title">TD Initiation aux Bases de données</div>
+                            <div class="session-details">
+                                <span class="session-room">Salle B7</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Samedi -->
+                <tr>
+                    <td class="day-cell">Samedi</td>
+                    <td class="empty-cell">-</td>
+                    <td class="empty-cell">-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color cours"></div>
+                <div class="legend-label">Cours Magistraux</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color tp"></div>
+                <div class="legend-label">Travaux Pratiques (TP)</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color td"></div>
+                <div class="legend-label">Travaux Dirigés (TD)</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add smooth animations on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const sessions = document.querySelectorAll('.session');
+            sessions.forEach((session, index) => {
+                session.style.opacity = '0';
+                session.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    session.style.transition = 'opacity 0.5s, transform 0.5s';
+                    session.style.opacity = '1';
+                    session.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+        });
+
+        // Add click interaction for sessions
+        document.querySelectorAll('.session').forEach(session => {
+            session.addEventListener('click', function() {
+                this.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>
